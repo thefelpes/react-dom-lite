@@ -22,6 +22,10 @@ function listenTo(
 
   eventName = eventName.toLowerCase();
 
+  // Use onInput instead of onChange to more closely mimic ReactDOM's onChange
+  // event
+  if (eventName === 'change') eventName = 'input';
+
   if (lastValue)
     domElement.removeEventListener(eventName, lastValue, useCapture);
 
