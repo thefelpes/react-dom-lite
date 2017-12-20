@@ -3,33 +3,13 @@
 import css from 'dom-helpers/style';
 import invariant from 'invariant';
 import { setValueOnElement, isEventRegex } from './DOMProperties';
+import * as Events from './events';
 
 const isRenderableChild = child =>
   typeof child === 'string' || typeof child === 'number';
 
-function listenTo(
-  domElement: Element,
-  eventName: string,
-  value: any,
-  lastValue: any
-) {
-  let useCapture = false;
-
-  if (eventName.endsWith('Capture')) {
-    eventName = eventName.slice(0, -7);
-    useCapture = true;
-  }
-
-  eventName = eventName.toLowerCase();
-
-  if (lastValue)
-    domElement.removeEventListener(eventName, lastValue, useCapture);
-
-  domElement.addEventListener(eventName, value, useCapture);
-}
-
 export function setInitialProps(domElement: Element, nextProps: Props) {
-  Object.entries(nextProps).forEach(([propKey: string, propValue: any]) => {
+  Object.entries(nextProps).forEach(([propKey, propValue]) => {
     let match;
 
     // inline styles!
@@ -56,7 +36,7 @@ export function setInitialProps(domElement: Element, nextProps: Props) {
       // Add DOM event listeners
     } else if ((match = propKey.match(isEventRegex))) {
       let [, eventName] = match;
-      listenTo(domElement, eventName, propValue, null);
+      Events.listenTo(domElement, eventName, (propValue: any), null);
     } else if (propValue != null) {
       setValueOnElement(domElement, propKey, propValue);
     }
@@ -164,7 +144,7 @@ export function updateProps(
     } else if ((match = propKey.match(isEventRegex))) {
       let [lastHandler, nextHandler] = propValue;
 
-      listenTo(domElement, match[1], nextHandler, lastHandler);
+      Events.listenTo(domElement, match[1], nextHandler, lastHandler);
     } else if (propValue != null) {
       setValueOnElement(domElement, propKey, propValue);
     }
